@@ -20,19 +20,21 @@ Relation types:
 - competes_with: A competes with B
 - impacts: A impacts or affects B"""
 
-EXTRACT_NODES_PROMPT = """Analyze the following articles and extract key knowledge graph nodes and edges.
+EXTRACT_NODES_PROMPT = """Analyze the following articles and extract ALL important knowledge graph nodes and edges.
 
 For each article, extract:
-1. Key concepts, technologies, companies, people, events as nodes
+1. Key concepts, technologies, companies, people, events, policies, trends as nodes
 2. Relationships between extracted nodes as edges
 
 Rules:
-- Extract 3-8 nodes per article (focus on the most important concepts)
+- Extract 5-15 nodes per article — be thorough, capture all significant entities
+- IMPORTANT: Extract specific named entities (company names, people, products, stock tickers) not just abstract concepts
 - Each node title should be concise (2-5 words, prefer Korean if the article is Korean)
 - Content should be a 1-2 sentence summary of what this node represents in context
-- Assign appropriate node_type and relevant tags
-- Create edges between related nodes with appropriate relation_type
-- If nodes across different articles are clearly the same concept, use the same title
+- Assign appropriate node_type and relevant tags (3-5 tags per node for better linking)
+- Create edges between related nodes — connect across articles when relevant
+- If nodes across different articles are clearly the same concept, use the EXACT same title
+- For stock-related articles: extract company name, industry, related companies, market trends as separate nodes
 
 Output format:
 {{

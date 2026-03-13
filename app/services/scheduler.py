@@ -1,6 +1,6 @@
 """Scheduler: runs the full pipeline periodically.
 
-Schedule: every 6 hours at 00:00, 06:00, 12:00, 18:00 KST.
+Schedule: every 3 hours at 00:00, 03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00 KST.
 Uses asyncio-based scheduling (no external dependencies).
 """
 import asyncio
@@ -13,8 +13,8 @@ logger = logging.getLogger(__name__)
 
 KST = timezone(timedelta(hours=9))
 
-# Target hours in KST (00, 06, 12, 18)
-SCHEDULE_HOURS = [0, 6, 12, 18]
+# Target hours in KST (every 3 hours)
+SCHEDULE_HOURS = [0, 3, 6, 9, 12, 15, 18, 21]
 
 # Track scheduler state
 _scheduler_task = None
@@ -85,37 +85,13 @@ async def run_full_pipeline() -> dict:
     results = {}
 
     try:
-        # Stage 1: Ingest articles
-        logger.info("[Pipeline] Stage 1: Ingesting articles...")
+        # Stage 1: Ingest from all sources (news, youtube, community, stock)
+        logger.info("[Pipeline] Stage 1: Ingesting from all sources...")
         try:
-            from app.services.article_processor import process_articles
-            import aiohttp
-            from app.core.config import NEWS_API_URL
+            from app.api.ingest import ingest_all
 
-            articles = []
-            async with aiohttp.ClientSession() as session:
-                url = f"{NEWS_API_URL}/api/news/briefing/themes"
-                async with session.get(url, timeout=aiohttp.ClientTimeout(total=15)) as resp:
-                    if resp.status == 200:
-                        data = await resp.json()
-                        themes = data if isinstance(data, list) else data.get("themes", [])
-                        for theme in themes[:20]:
-                            title = theme.get("theme_title") or theme.get("title", "")
-                            content = theme.get("summary") or theme.get("content", "")
-                            if title and content:
-                                articles.append({
-                                    "title": title,
-                                    "content": content,
-                                    "url": theme.get("url", ""),
-                                    "category": theme.get("category", "news"),
-                                })
-
-            if articles:
-                ingest_result = await process_articles(articles)
-                results["ingest"] = ingest_result
-            else:
-                results["ingest"] = {"status": "skipped", "message": "No articles available"}
-
+            ingest_result = await ingest_all()
+            results["ingest"] = ingest_result
         except Exception as e:
             logger.warning("[Pipeline] Ingest failed: %s", e)
             results["ingest"] = {"status": "error", "message": str(e)}
