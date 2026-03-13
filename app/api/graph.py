@@ -1,5 +1,5 @@
 """Graph data API for D3.js visualization."""
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 
 from app.core.database import get_db
 
@@ -10,11 +10,12 @@ router = APIRouter(prefix="/api/graph", tags=["graph"])
 def get_graph(
     node_type: str | None = None,
     source_type: str | None = None,
+    days: int | None = Query(None, ge=1, le=365, description="최근 N일간 데이터만"),
     limit: int = 500,
 ):
     """Get graph data (nodes + edges) for D3.js force layout."""
     with get_db() as db:
-        node_query = "SELECT id, title, node_type, tags, source_type FROM nodes WHERE 1=1"
+        node_query = "SELECT id, title, node_type, tags, source_type, created_at FROM nodes WHERE 1=1"
         params = []
 
         if node_type:
@@ -23,6 +24,9 @@ def get_graph(
         if source_type:
             node_query += " AND source_type = ?"
             params.append(source_type)
+        if days:
+            node_query += " AND created_at >= datetime('now', ?)"
+            params.append(f"-{days} days")
 
         node_query += " ORDER BY created_at DESC LIMIT ?"
         params.append(limit)

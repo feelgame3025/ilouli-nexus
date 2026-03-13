@@ -1,4 +1,5 @@
 """FastAPI application entry point."""
+import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -7,14 +8,34 @@ from fastapi.staticfiles import StaticFiles
 
 from app.core.config import PORT, ALLOWED_ORIGINS
 from app.core.database import init_db
-from app.api import nodes, edges, graph, search
+from app.api import nodes, edges, graph, search, ingest, analysis, automation, batch
+
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Initialize database on startup."""
+    """Initialize database and start scheduler on startup."""
     init_db()
+
+    # Start the automation scheduler
+    try:
+        from app.services.scheduler import start_scheduler
+
+        start_scheduler()
+        logger.info("Automation scheduler started")
+    except Exception as e:
+        logger.warning("Failed to start scheduler: %s", e)
+
     yield
+
+    # Cleanup: stop scheduler
+    try:
+        from app.services.scheduler import stop_scheduler
+
+        stop_scheduler()
+    except Exception:
+        pass
 
 
 app = FastAPI(
@@ -38,6 +59,10 @@ app.include_router(nodes.router)
 app.include_router(edges.router)
 app.include_router(graph.router)
 app.include_router(search.router)
+app.include_router(ingest.router)
+app.include_router(analysis.router)
+app.include_router(automation.router)
+app.include_router(batch.router)
 
 
 @app.get("/api/health")

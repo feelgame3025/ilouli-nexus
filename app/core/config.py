@@ -10,9 +10,13 @@ JWT_SECRET = os.getenv("JWT_SECRET", "")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")
 
 # Service URLs (internal)
-NEWS_API_URL = "http://localhost:4008"
-COMMUNITY_API_URL = "http://localhost:4002"
-STOCK_API_URL = "http://localhost:4003"
+NEWS_API_URL = os.getenv("NEWS_API_URL", "http://localhost:4008")
+COMMUNITY_API_URL = os.getenv("COMMUNITY_API_URL", "http://localhost:4002")
+STOCK_API_URL = os.getenv("STOCK_API_URL", "http://localhost:4003")
+
+# AI Model
+AI_MODEL = os.getenv("AI_MODEL", "gpt-4o-mini")
+AI_ENDPOINT = os.getenv("AI_ENDPOINT", "https://models.inference.ai.azure.com")
 
 # CORS
 ALLOWED_ORIGINS = [

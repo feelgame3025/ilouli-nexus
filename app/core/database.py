@@ -63,7 +63,16 @@ CREATE TABLE IF NOT EXISTS ingest_log (
     ingested_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 노드 임베딩 (벡터 검색 fallback - sqlite-vec 없을 때)
+CREATE TABLE IF NOT EXISTS node_embeddings (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    node_id     INTEGER UNIQUE NOT NULL REFERENCES nodes(id) ON DELETE CASCADE,
+    embedding   BLOB NOT NULL,
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- 인덱스
+CREATE INDEX IF NOT EXISTS idx_node_embeddings_node ON node_embeddings(node_id);
 CREATE INDEX IF NOT EXISTS idx_nodes_type ON nodes(node_type);
 CREATE INDEX IF NOT EXISTS idx_nodes_source ON nodes(source_type, source_id);
 CREATE INDEX IF NOT EXISTS idx_edges_source ON edges(source_id);

@@ -1,7 +1,8 @@
 """Node CRUD API endpoints."""
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
 from app.core.database import get_db
+from app.core.auth import require_tier
 from app.models.schemas import NodeCreate, NodeUpdate, NodeResponse
 
 router = APIRouter(prefix="/api/nodes", tags=["nodes"])
@@ -59,7 +60,7 @@ def get_node(node_id: int):
         return {"node": dict(node), "edges": [dict(e) for e in edges]}
 
 
-@router.post("", status_code=201)
+@router.post("", status_code=201, dependencies=[Depends(require_tier("family"))])
 def create_node(data: NodeCreate):
     """Create a new node."""
     with get_db() as db:
@@ -75,7 +76,7 @@ def create_node(data: NodeCreate):
         return dict(node)
 
 
-@router.put("/{node_id}")
+@router.put("/{node_id}", dependencies=[Depends(require_tier("family"))])
 def update_node(node_id: int, data: NodeUpdate):
     """Update a node."""
     with get_db() as db:
@@ -104,7 +105,7 @@ def update_node(node_id: int, data: NodeUpdate):
         return dict(node)
 
 
-@router.delete("/{node_id}")
+@router.delete("/{node_id}", dependencies=[Depends(require_tier("admin"))])
 def delete_node(node_id: int):
     """Delete a node."""
     with get_db() as db:

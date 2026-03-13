@@ -1,13 +1,14 @@
 """Edge CRUD API endpoints."""
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
 from app.core.database import get_db
+from app.core.auth import require_tier
 from app.models.schemas import EdgeCreate
 
 router = APIRouter(prefix="/api/edges", tags=["edges"])
 
 
-@router.post("", status_code=201)
+@router.post("", status_code=201, dependencies=[Depends(require_tier("family"))])
 def create_edge(data: EdgeCreate):
     """Create a new edge between nodes."""
     with get_db() as db:
@@ -30,7 +31,7 @@ def create_edge(data: EdgeCreate):
         return dict(edge)
 
 
-@router.delete("/{edge_id}")
+@router.delete("/{edge_id}", dependencies=[Depends(require_tier("admin"))])
 def delete_edge(edge_id: int):
     """Delete an edge."""
     with get_db() as db:
