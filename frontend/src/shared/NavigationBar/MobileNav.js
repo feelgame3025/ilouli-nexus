@@ -10,6 +10,7 @@ import {
   STOCK_MENU_ITEMS,
   WORK_MENU_ITEMS
 } from '../../config/menuConfig';
+import { Icon } from '../Icons';
 
 /**
  * 모바일 네비게이션 컴포넌트 (Tailwind CSS)
@@ -21,7 +22,9 @@ const MobileNav = ({
   showAdminLab,
   activeDropdown,
   onToggleMobileDropdown,
-  onClose
+  onClose,
+  isAuthenticated,
+  onLogin
 }) => {
   const { t } = useTranslation();
   const location = useLocation();
@@ -161,6 +164,18 @@ const MobileNav = ({
             />
           )}
         </ul>
+
+        {/* 로그인 버튼 - 640px 미만에서만 표시 (sm:hidden) */}
+        {!isAuthenticated && (
+          <div className="sm:hidden px-4 py-3 border-t border-gray-100">
+            <button
+              onClick={() => { onClose(); onLogin(); }}
+              className="w-full py-2.5 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors"
+            >
+              {t('auth.login.button')}
+            </button>
+          </div>
+        )}
       </nav>
     </>
   );
@@ -200,9 +215,20 @@ const MobileDropdownItem = ({ name, isActive, isOpen, onToggle, label, items, ho
         <a
           key={item.path}
           href={getHostUrl(host, item.path)}
-          className="block px-8 py-2.5 text-gray-700 no-underline hover:bg-gray-100 hover:text-gray-900 transition-colors duration-200"
+          className="flex items-center gap-2.5 px-8 py-2.5 text-gray-700 no-underline hover:bg-gray-100 hover:text-gray-900 transition-colors duration-200"
+          {...(item.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
         >
-          {t(item.labelKey) || item.label}
+          {item.icon && (
+            <span className="flex-shrink-0 text-gray-400">
+              <Icon name={item.icon} size={16} />
+            </span>
+          )}
+          <span className="flex-1">{t(item.labelKey) || item.label}</span>
+          {item.external && (
+            <svg className="w-3.5 h-3.5 flex-shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+          )}
         </a>
       ))}
     </div>

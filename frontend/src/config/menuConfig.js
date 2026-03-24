@@ -174,6 +174,15 @@ export const LAB_MENU_ITEMS = [
     descKey: 'nav.markdownDesc',
     external: true
   },
+  {
+    path: 'https://nexus.ilouli.com',
+    label: 'Nexus',
+    labelKey: 'nav.nexus',
+    icon: 'globe',
+    description: '지식 그래프 탐색',
+    descKey: 'nav.nexusDesc',
+    external: true
+  },
 ];
 
 /**
@@ -195,6 +204,15 @@ export const STOCK_MENU_ITEMS = [
     icon: 'chart',
     description: '뉴스 기반 종목 분석',
     descKey: 'nav.stockAnalysisDesc',
+    external: true
+  },
+  {
+    path: 'https://invest.ilouli.com',
+    label: '투자허브',
+    labelKey: 'nav.investHub',
+    icon: 'globe',
+    description: '국내+해외 통합 투자 분석',
+    descKey: 'nav.investHubDesc',
     external: true
   },
 ];
