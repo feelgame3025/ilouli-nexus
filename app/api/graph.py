@@ -15,7 +15,7 @@ def get_graph(
 ):
     """Get graph data (nodes + edges) for D3.js force layout."""
     with get_db() as db:
-        node_query = "SELECT id, title, node_type, tags, source_type, created_at FROM nodes WHERE 1=1"
+        node_query = "SELECT id, title, node_type, tags, source_type, url, created_at FROM nodes WHERE 1=1"
         params = []
 
         if node_type:
@@ -61,6 +61,7 @@ def get_graph(
                 "node_type": node["node_type"],
                 "tags": node["tags"],
                 "source_type": node["source_type"],
+                "url": node["url"],
                 "connections": connection_counts.get(node["id"], 0),
             })
 

@@ -25,8 +25,8 @@ const NODE_TYPE_LABELS = {
 
 const DEFAULT_COLOR = '#6b7280';
 
-function getNodeRadius(connections) {
-  return Math.max(6, Math.min(20, 6 + connections * 1.5));
+function getNodeRadius() {
+  return 8;
 }
 
 function getNodeColor(nodeType) {
@@ -185,9 +185,9 @@ export default function ForceGraph({ nodes, edges, selectedNodeId, onNodeClick }
       }
 
       // Label for larger or selected/hovered nodes
-      if ((r >= 10 || isSelected || isHovered || isConnected) && opacity > 0.4) {
+      if ((r >= 14 || isSelected || isHovered || isConnected) && opacity > 0.4) {
         const label = n.title.length > 18 ? n.title.slice(0, 16) + '...' : n.title;
-        ctx.font = `${isSelected ? 'bold ' : ''}${isSelected ? 12 : 10}px -apple-system, "Noto Sans KR", sans-serif`;
+        ctx.font = `${isSelected ? 'bold ' : ''}${isSelected ? 13 : 11}px -apple-system, "Noto Sans KR", sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'top';
         ctx.fillStyle = dimmed ? 'rgba(0,0,0,0.15)' : 'rgba(30,30,30,0.85)';
@@ -260,13 +260,14 @@ export default function ForceGraph({ nodes, edges, selectedNodeId, onNodeClick }
         d3
           .forceLink(edges)
           .id((d) => d.id)
-          .distance(80)
-          .strength((d) => Math.min(1, (d.weight || 1) * 0.3))
+          .distance(50)
+          .strength((d) => Math.min(1, (d.weight || 1) * 0.5))
       )
-      .force('charge', d3.forceManyBody().strength(-120).distanceMax(300))
+      .force('charge', d3.forceManyBody().strength(-60).distanceMax(200))
       .force('center', d3.forceCenter(w / 2, h / 2))
-      .force('collision', d3.forceCollide().radius((d) => getNodeRadius(d.connections || 0) + 4))
-      .alphaDecay(0.02)
+      .force('collision', d3.forceCollide().radius(() => getNodeRadius() + 3))
+      .alphaDecay(0.05)
+      .velocityDecay(0.6)
       .on('tick', () => {
         // Lerp entering node opacities
         for (const [id, opacity] of nodeOpacityRef.current.entries()) {
@@ -397,6 +398,7 @@ export default function ForceGraph({ nodes, edges, selectedNodeId, onNodeClick }
             connections: hovered.connections || 0,
             source: hovered.source_type,
             tags: hovered.tags,
+            url: hovered.url,
           });
           // Start hover animation loop
           hoverAnimRef.current = 0;
@@ -456,12 +458,23 @@ export default function ForceGraph({ nodes, edges, selectedNodeId, onNodeClick }
       }
     });
 
+    // Double-click to open source URL
+    sel.on('dblclick.openUrl', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const node = findNode(event.offsetX, event.offsetY);
+      if (node && node.url) {
+        window.open(node.url, '_blank', 'noopener,noreferrer');
+      }
+    });
+
     return () => {
       sel.on('.zoom', null);
       sel.on('mousedown.drag', null);
       sel.on('mousemove.drag', null);
       sel.on('mouseup.drag', null);
       sel.on('click.select', null);
+      sel.on('dblclick.openUrl', null);
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     };
   }, [nodes, draw, onNodeClick]);
@@ -491,6 +504,9 @@ export default function ForceGraph({ nodes, edges, selectedNodeId, onNodeClick }
           </div>
           {tooltip.source && (
             <div className="text-[10px] text-gray-400 mt-1">소스: {tooltip.source}</div>
+          )}
+          {tooltip.url && (
+            <div className="text-[10px] text-blue-500 mt-1">더블클릭하여 원문 보기 →</div>
           )}
         </div>
       )}
